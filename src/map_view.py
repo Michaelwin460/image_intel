@@ -13,11 +13,15 @@ map_view.py - יצירת מפה אינטראקטיבית
 6. הוספת מקרא מכשירים
 """
 
+
+
+
 import folium
 
 
 def sort_by_time(arr):
     return sorted(arr, key=lambda x: (x.get("datetime") is None, x.get("datetime")))
+
 
 def create_map(images_data):
     """
@@ -36,7 +40,7 @@ def create_map(images_data):
 
     if not gps_images:
         m = folium.Map(location=[32.0853, 34.7818], zoom_start=7)
-        return m._repr_html_()
+        return m.get_root().render()
 
     gps_images = sort_by_time(gps_images)
 
@@ -45,19 +49,58 @@ def create_map(images_data):
 
     m = folium.Map(location=[avg_lat, avg_lon], zoom_start=10)
 
-    for img in gps_images:
-        popup_text = (
-            f"Filename: {img.get('filename', 'Unknown')}<br>"
-            f"Camera: {img.get('camera_make', 'Unknown')} {img.get('camera_model', '')}<br>"
-            f"Date: {img.get('datetime', 'Unknown')}"
-        )
+    colors = ["red", "green", "blue", "purple", "orange", "darkred", "cadetblue"]
+    device_colors = {}
+    color_index = 0
+
+    points = []
+
+    for i, img in enumerate(gps_images, start=1):
+        device = img.get("camera_model") or img.get("camera_make") or "Unknown"
+
+        if device not in device_colors:
+            device_colors[device] = colors[color_index % len(colors)]
+            color_index += 1
+
+        marker_color = device_colors[device]
+
+        lat = img["latitude"]
+        lon = img["longitude"]
+        points.append([lat, lon])
+
+        popup_html = f"""
+        <div style="font-family: sans-serif; width: 220px;">
+            <h4 style="margin: 0 0 10px 0;">📷 {img.get("filename", "Unknown")}</h4>
+            <p style="margin: 5px 0;"><b>Photo #:</b> {i}</p>
+            <p style="margin: 5px 0;"><b>Time:</b> {img.get("datetime", "Unknown")}</p>
+            <p style="margin: 5px 0;"><b>Device:</b> {device}</p>
+            <p style="margin: 5px 0;">
+                <b>Coordinates:</b><br>
+                {lat:.6f}, {lon:.6f}
+            </p>
+        </div>
+        """
+
+        popup = folium.Popup(popup_html, max_width=250)
+        tooltip_text = f"{device} - {img.get('datetime', 'Unknown')}"
 
         folium.Marker(
-            location=[img["latitude"], img["longitude"]],
-            popup=popup_text
+            location=[lat, lon],
+            popup=popup,
+            tooltip=tooltip_text,
+            icon=folium.Icon(color=marker_color, icon="camera", prefix="fa"),
         ).add_to(m)
 
-    return m._repr_html_()
+    if len(points) > 1:
+        folium.PolyLine(
+            points,
+            color="blue",
+            weight=3,
+            opacity=0.6,
+            tooltip="מסלול כרונולוגי"
+        ).add_to(m)
+
+    return m.get_root().render()
 
 
 if __name__ == "__main__":
@@ -85,4 +128,7 @@ if __name__ == "__main__":
     html = create_map(fake_data)
     with open("test_map.html", "w", encoding="utf-8") as f:
         f.write(html)
+
     print("Map saved to test_map.html")
+
+
