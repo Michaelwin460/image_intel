@@ -52,6 +52,12 @@ def fake_create_report(images_data, map_html, timeline_html, analysis):
         for cam in analysis.get("unique_cameras", [])
     )
 
+    safe_map_html = (
+        map_html
+        .replace("&", "&amp;")
+        .replace("'", "&apos;")
+    )
+
     return f"""
     <!DOCTYPE html>
     <html lang="he" dir="rtl">
@@ -98,6 +104,13 @@ def fake_create_report(images_data, map_html, timeline_html, analysis):
                 font-weight: bold;
                 color: #1B4F72;
             }}
+            .map-frame {{
+                width: 100%;
+                height: 520px;
+                border: none;
+                border-radius: 8px;
+                background: white;
+            }}
         </style>
     </head>
     <body>
@@ -131,7 +144,7 @@ def fake_create_report(images_data, map_html, timeline_html, analysis):
 
         <div class="section">
             <h2>מפה</h2>
-            {map_html}
+            <iframe class="map-frame" srcdoc='{safe_map_html}'></iframe>
         </div>
 
         <div class="section">
