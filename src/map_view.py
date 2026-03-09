@@ -16,6 +16,8 @@ map_view.py - יצירת מפה אינטראקטיבית
 import folium
 
 
+COLORS = ["blue", "green", "yellow", "orange", "red", "purple", "pink", "brown", "black", "white"]
+
 def sort_by_time(arr):
     pass
 
@@ -30,7 +32,30 @@ def create_map(images_data):
     Returns:
         string של HTML (המפה)
     """
-    pass
+    gps_images = [img for img in images_data if img["has_gps"]]
+
+    if not gps_images:
+        return "<h2>No GPS data found</h2>"
+
+    center_lat = sum(img["latitude"] for img in gps_images) / len(gps_images)
+    center_lon = sum(img["longitude"] for img in gps_images) / len(gps_images)
+
+    m = folium.Map(location=[center_lat, center_lon], zoom_start=8)
+
+    color_index = 0
+    camera_colors = {}
+    for img in gps_images:
+        if img["camera_model"] not in camera_colors:
+            camera_colors[img["camera_model"]] = COLORS[color_index]
+            color_index += 1
+
+        folium.Marker(
+            location=[img["latitude"], img["longitude"]],
+            popup=f"{img['filename']}<br>{img['datetime']}<br>{img['camera_model']}",
+            icon=folium.Icon(color=camera_colors[img["camera_model"]])
+        ).add_to(m)
+
+    return m._repr_html_()
 
 
 
