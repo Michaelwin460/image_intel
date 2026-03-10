@@ -1,7 +1,5 @@
 import math
 import requests
-from extractor import extract_all
-import time
 from geopy.geocoders import Nominatim
 from geopy.extra.rate_limiter import RateLimiter
 
@@ -234,13 +232,3 @@ def analyze(images_data: list[dict]) -> dict:
             f"נמצאו {len(unique_cameras(images_data))} מכשירים שונים"
         ] + camera_switches_insights + geographical_concentration_insights + time_gaps_insights + return_to_location_insights
     }
-
-
-path = "C:\\Users\\user\\PyCharmMiscProject\\image_intel_project\\images\\sample_data"
-print(f"analysing {path}...")
-for key, value in analyze(extract_all(path)).items():
-    if key == "insights":
-        print(key + ":")
-        for insight in value:
-            print(insight)
-    print(f"{key}: {value}")

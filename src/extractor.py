@@ -20,8 +20,7 @@ def dms_to_decimal(dms_tuple, ref):
     return decimal
 
 def has_gps(data: dict):
-    return "GPSInfo" in data and 1 in data and 2 in data and 3 in data and 4 in data
-
+    return "GPSInfo" in data and 1 in data["GPSInfo"] and 2 in data["GPSInfo"] and 3 in data["GPSInfo"] and 4 in data["GPSInfo"]
 
 
 def latitude(data: dict):
