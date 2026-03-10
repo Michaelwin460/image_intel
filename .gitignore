@@ -2,6 +2,7 @@
 __pycache__/
 *.py[codz]
 *$py.class
+idea.
 
 # C extensions
 *.so
@@ -214,3 +215,5 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+.idea
