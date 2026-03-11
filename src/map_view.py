@@ -12,9 +12,11 @@ map_view.py - יצירת מפה אינטראקטיבית
 5. תיקון color_index - היה מתקדם על כל תמונה במקום רק על מכשיר חדש
 6. הוספת מקרא מכשירים
 """
-
+from extractor import *
 import folium
 
+
+COLORS = ['pink', 'lightred', 'white', 'lightgray', 'blue', 'lightgreen', 'purple', 'darkgreen', 'red', 'darkblue', 'darkred', 'black', 'cadetblue', 'orange', 'darkpurple', 'beige', 'green', 'lightblue', 'gray']
 
 def sort_by_time(arr):
     pass
@@ -30,7 +32,30 @@ def create_map(images_data):
     Returns:
         string של HTML (המפה)
     """
-    pass
+    gps_images = [img for img in images_data if img["has_gps"]]
+
+    if not gps_images:
+        return "<h2>No GPS data found</h2>"
+
+    center_lat = sum(img["latitude"] for img in gps_images) / len(gps_images)
+    center_lon = sum(img["longitude"] for img in gps_images) / len(gps_images)
+
+    m = folium.Map(location=[center_lat, center_lon], zoom_start=8)
+
+    color_index = 0
+    camera_colors = {}
+    for img in gps_images:
+        if img["camera_model"] not in camera_colors:
+            camera_colors[img["camera_model"]] = COLORS[color_index]
+            color_index += 1
+
+        folium.Marker(
+            location=[img["latitude"], img["longitude"]],
+            popup=f"{img['filename']}<br>{img['datetime']}<br>{img['camera_model']}",
+            icon=folium.Icon(color=camera_colors[img["camera_model"]])
+        ).add_to(m)
+
+    return m._repr_html_()
 
 
 
@@ -44,7 +69,8 @@ if __name__ == "__main__":
          "has_gps": True, "camera_make": "Apple", "camera_model": "iPhone 15 Pro",
          "datetime": "2025-01-13 09:00:00"},
     ]
-    html = create_map(fake_data)
+    html = create_map(extract_all("C:\\Users\\micha\\OneDrive\\Desktop\\Python Excersize\\image_intel_project\\image_intel_project\\images\\ready"))
     with open("test_map.html", "w", encoding="utf-8") as f:
         f.write(html)
     print("Map saved to test_map.html")
+
