@@ -13,7 +13,7 @@ map_view.py - יצירת מפה אינטראקטיבית
 6. הוספת מקרא מכשירים
 """
 
-from extractor import extract_all
+from src.extractor import extract_all
 from branca.element import Element
 import folium
 

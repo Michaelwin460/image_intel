@@ -1,66 +1,37 @@
-from datetime import datetime
-import extractor
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+import pytest
+from src.analyzer import analyze
 
 
-def analyze(images_data):
-    """
-    מנתח את נתוני התמונות ומפיק תובנות מודיעיניות.
-    """
-    # חישוב נתונים בסיסיים
-    total_images = len(images_data)
-    images_with_gps = len([img for img in images_data if img.get("gps")])
-    dated_images = [img for img in images_data if img.get("datetime")]
+def get_fake_data():
+    return [
+        {"filename": "t1.jpg", "latitude": 32.0, "longitude": 34.7,
+         "has_gps": True, "camera_make": "Samsung", "camera_model": "Galaxy S23",
+         "datetime": "2025-01-12 08:30:00"},
+        {"filename": "t2.jpg", "latitude": 31.7, "longitude": 35.2,
+         "has_gps": True, "camera_make": "Apple", "camera_model": "iPhone 15 Pro",
+         "datetime": "2025-01-13 09:00:00"},
+    ]
 
-    # חילוץ מכשירים ייחודיים
-    cameras = list(set([img.get("camera_model") for img in images_data if img.get("camera_model")]))
+def test_analyze_returns_dict():
+    result = analyze(get_fake_data())
+    assert isinstance(result, dict)
 
-    # טווח תאריכים
-    date_range = {"start": None, "end": None}
-    if dated_images:
-        sorted_dates = sorted([img["datetime"] for img in dated_images])
-        date_range["start"] = sorted_dates[0]
-        date_range["end"] = sorted_dates[-1]
+def test_analyze_has_required_fields():
+    result = analyze(get_fake_data())
+    assert "total_images" in result
+    assert "images_with_gps" in result
+    assert "unique_cameras" in result
+    assert "insights" in result
 
-    # זיהוי תובנות (Insights)
-    insights = []
+def test_analyze_counts_correctly():
+    result = analyze(get_fake_data())
+    assert result["total_images"] == 2
+    assert result["images_with_gps"] == 2
 
-    # 1. תובנת החלפת מכשירים
-    if len(cameras) > 1:
-        insights.append(f"נמצאו {len(cameras)} מכשירים שונים - ייתכן שהסוכן החליף מכשירים.")
-
-    # 2. בדיקת רצף החלפות
-    dated_images.sort(key=lambda x: x["datetime"])
-    for i in range(1, len(dated_images)):
-        prev_cam = dated_images[i - 1].get("camera_model")
-        curr_cam = dated_images[i].get("camera_model")
-        if prev_cam and curr_cam and prev_cam != curr_cam:
-            insights.append(f"בתאריך {dated_images[i]['datetime']} הסוכן עבר מ-{prev_cam} ל-{curr_cam}.")
-
-    # 3. תובנת GPS
-    if images_with_gps > 0:
-        insights.append(f"קיימים נתוני מיקום עבור {images_with_gps} תמונות. ניתן לבצע איכון גיאוגרפי.")
-
-    # בניית המילון הסופי לפי הפורמט הנדרש
-    return {
-        "total_images": total_images,
-        "images_with_gps": images_with_gps,
-        "images_with_datetime": len(dated_images),
-        "unique_cameras": cameras,
-        "date_range": date_range,
-        "insights": insights
-    }
-
-
-
-# # --- אזור הרצה לבדיקה (Mock Data) ---
-# if __name__ == "__main__":
-#     test_data = [
-#         {"filename": "a.jpg", "datetime": "2025-01-12 10:00", "camera_model": "Samsung S23", "gps": True},
-#         {"filename": "b.jpg", "datetime": "2025-01-13 12:00", "camera_model": "iPhone 15 Pro", "gps": False},
-#     ]
-#
-#     analysis_results = analyze(test_data)
-#
-#     import json
-#
-#     print(json.dumps(analysis_results, indent=4, ensure_ascii=False))
+def test_analyze_handles_empty():
+    result = analyze([])
+    assert result["total_images"] == 0
