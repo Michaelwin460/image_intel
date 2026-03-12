@@ -2,79 +2,215 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <!-- תיקון: היה initial-width=1.0 במקום initial-scale=1.0 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Intel - מודיעין חזותי</title>
+    <title>Image Intel | האקתון 2026</title>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --container-bg: #1e293b;
-            --text-color: #f8fafc;
-            --accent-color: #38bdf8;
-            --accent-hover: #0284c7;
-            --border-color: #475569;
+            --bg-1: #020617;
+            --bg-2: #0f172a;
+            --card: rgba(15, 23, 42, 0.88);
+            --card-2: rgba(30, 41, 59, 0.75);
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-strong: #0ea5e9;
+            --accent-soft: rgba(56, 189, 248, 0.12);
+            --border: rgba(148, 163, 184, 0.18);
+            --success: #22c55e;
+            --shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
+            margin: 0;
+            min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            color: var(--text);
+            background:
+                radial-gradient(circle at top right, rgba(56, 189, 248, 0.16), transparent 28%),
+                radial-gradient(circle at bottom left, rgba(14, 165, 233, 0.12), transparent 24%),
+                linear-gradient(135deg, var(--bg-1), var(--bg-2));
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            padding: 30px 16px;
         }
 
         .container {
-            background-color: var(--container-bg);
-            padding: 50px;
-            border-radius: 16px;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.6);
             width: 100%;
-            max-width: 550px;
-            text-align: center;
+            max-width: 760px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(14px);
+            overflow: hidden;
+        }
+
+        .top-bar {
+            height: 6px;
+            background: linear-gradient(90deg, #38bdf8, #0ea5e9, #22d3ee);
+        }
+
+        .content {
+            padding: 38px 34px 30px;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: 0.92rem;
+            font-weight: 600;
+            margin-bottom: 16px;
         }
 
         h1 {
-            color: var(--accent-color);
-            font-size: 2.8em;
-            margin-bottom: 10px;
-            margin-top: 0;
-            letter-spacing: 2px;
+            margin: 0;
+            font-size: 2.55rem;
+            line-height: 1.05;
+            color: white;
+            letter-spacing: 0.5px;
         }
 
-        p {
-            color: #94a3b8;
-            font-size: 1.1em;
-            margin-bottom: 40px;
+        .subtitle {
+            margin: 14px 0 30px;
+            color: var(--muted);
+            font-size: 1.08rem;
+            line-height: 1.7;
+        }
+
+        .section-title {
+            text-align: right;
+            font-size: 1rem;
+            color: #cbd5e1;
+            margin: 0 0 12px;
+            font-weight: 700;
+        }
+
+        .source-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        .option-card {
+            position: relative;
+            border: 1px solid var(--border);
+            background: var(--card-2);
+            border-radius: 18px;
+            padding: 18px 18px 16px;
+            text-align: right;
+            cursor: pointer;
+            transition: 0.25s ease;
+        }
+
+        .option-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(56, 189, 248, 0.4);
+            box-shadow: 0 12px 26px rgba(0,0,0,0.18);
+        }
+
+        .option-card input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .option-card.active {
+            border-color: var(--accent);
+            background: rgba(56, 189, 248, 0.1);
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.25);
+        }
+
+        .option-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 6px;
+        }
+
+        .option-desc {
+            font-size: 0.92rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .section-box {
+            margin-bottom: 22px;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 18px;
+            background: rgba(255,255,255,0.03);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #cbd5e1;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        select {
+            width: 100%;
+            background: #0f172a;
+            color: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.14);
+        }
+
+        #upload-section {
+            display: none;
         }
 
         .file-drop-area {
-            border: 2px dashed var(--border-color);
-            border-radius: 12px;
-            padding: 50px 20px;
-            margin-bottom: 25px;
-            transition: all 0.3s ease;
-            background-color: rgba(255, 255, 255, 0.02);
+            border: 2px dashed rgba(148, 163, 184, 0.35);
+            border-radius: 18px;
+            padding: 38px 20px;
+            text-align: center;
+            transition: 0.25s ease;
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(56, 189, 248, 0.04));
             cursor: pointer;
         }
 
-        .file-drop-area:hover, .file-drop-area.dragover {
-            border-color: var(--accent-color);
-            background-color: rgba(56, 189, 248, 0.08);
+        .file-drop-area:hover,
+        .file-drop-area.dragover {
+            border-color: var(--accent);
+            background: rgba(56, 189, 248, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .upload-icon {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
         }
 
         .file-msg {
-            font-size: 1.2em;
-            color: #cbd5e1;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: white;
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .file-msg-sub {
-            font-size: 0.9em;
-            color: #64748b;
+            font-size: 0.95rem;
+            color: var(--muted);
         }
 
         input[type="file"] {
@@ -82,128 +218,199 @@
         }
 
         .submit-btn {
-            background-color: var(--accent-color);
-            color: #0f172a;
-            border: none;
-            padding: 15px 30px;
-            font-size: 1.2em;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
             width: 100%;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            border: none;
+            border-radius: 14px;
+            padding: 16px 22px;
+            font-size: 1.08rem;
+            font-weight: 800;
+            cursor: pointer;
+            color: #022c43;
+            background: linear-gradient(90deg, #38bdf8, #22d3ee);
+            box-shadow: 0 14px 28px rgba(14, 165, 233, 0.22);
+            transition: 0.25s ease;
         }
 
         .submit-btn:hover {
-            background-color: var(--accent-hover);
-            color: white;
-            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 18px 34px rgba(14, 165, 233, 0.32);
+        }
+
+        .footer-note {
+            margin-top: 16px;
+            font-size: 0.88rem;
+            color: #64748b;
+            text-align: center;
+        }
+
+        @media (max-width: 640px) {
+            .content {
+                padding: 28px 20px 22px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .source-options {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Image Intel</h1>
-        <p>מערכת סריקה וניתוח נתוני EXIF</p>
 
-        <form action="/analyze" method="POST" enctype="multipart/form-data">
-    <div style="margin-bottom:20px; text-align:right;">
-        <label>
-            <input type="radio" name="source_type" value="project" checked>
-            השתמש בתמונות מהפרויקט
-        </label>
-        <br>
-        <label>
-            <input type="radio" name="source_type" value="upload">
-            העלה תמונות משלך
-        </label>
+
+        <div class="top-bar"></div>
+
+        <div class="content">
+            <div class="eyebrow">Image Intel | האקתון 2026</div>
+            <h1>Image Intel</h1>
+            <p class="subtitle">
+                מערכת חכמה לניתוח תמונות, זיהוי נתוני EXIF, הפקת תובנות, מיפוי גיאוגרפי
+                ויצירת דוח חזותי אינטראקטיבי.
+            </p>
+
+            <form action="/analyze" method="POST" enctype="multipart/form-data">
+                <div class="section-title">בחר מקור לניתוח</div>
+
+                <div class="source-options">
+                    <label class="option-card active" id="project-card">
+                        <input type="radio" name="source_type" value="project" checked>
+                        <div class="option-title">השתמש בתמונות מהפרויקט</div>
+                        <div class="option-desc">טעינה מהירה של תיקיות מוכנות מראש מתוך הפרויקט.</div>
+                    </label>
+
+                    <label class="option-card" id="upload-card">
+                        <input type="radio" name="source_type" value="upload">
+                        <div class="option-title">העלה תמונות משלך</div>
+                        <div class="option-desc">גרור ושחרר תמונות או לחץ כדי לבחור כמה קבצים יחד.</div>
+                    </label>
+                </div>
+
+                <div class="section-box" id="project-folder-section">
+                    <label for="project_folder">בחר תיקייה מהפרויקט</label>
+                    <select name="project_folder" id="project_folder">
+                        <option value="ready">ready</option>
+                        <option value="sample_data">sample_data</option>
+                        <option value="uploads">uploads</option>
+                        <option value="all">All</option>
+                    </select>
+                </div>
+
+                <div class="section-box" id="upload-section">
+                    <div class="file-drop-area" id="drop-area">
+                        <div class="upload-icon">📂</div>
+                        <span class="file-msg" id="file-msg">לחץ כאן או גרור תמונות לכאן</span>
+                        <span class="file-msg-sub" id="file-msg-sub">אפשר לבחור ולהוסיף כמה תמונות יחד</span>
+                        <input type="file" name="photos" id="file-input" multiple accept="image/*">
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">התחל ניתוח מודיעיני</button>
+            </form>
+
+            <div class="footer-note">
+                תומך בתמונות עם נתוני EXIF ו-GPS לצורך מיפוי וניתוח חכם.
+            </div>
+        </div>
     </div>
-
-    <div style="margin-bottom:20px; text-align:right;">
-        <label for="project_folder">בחר תיקייה מהפרויקט:</label>
-        <select name="project_folder" id="project_folder">
-            <option value="ready">ready</option>
-            <option value="sample_data">sample_data</option>
-            <option value="uploads">uploads</option>
-            <option value="all">All</option>
-        </select>
-    </div>
-
-    <div class="file-drop-area" id="drop-area">
-        <span class="file-msg" id="file-msg">לחץ כאן או גרור תמונות לכאן</span>
-        <span class="file-msg-sub" id="file-msg-sub">אפשר לבחור כמה תמונות יחד</span>
-        <input type="file" name="photos" id="file-input" multiple accept="image/*">
-    </div>
-
-    <button type="submit" class="submit-btn">התחל ניתוח מודיעיני</button>
-</form>
 
     <script>
-    const dropArea = document.getElementById('drop-area');
-    const fileInput = document.getElementById('file-input');
-    const fileMsg = document.getElementById('file-msg');
-    const fileMsgSub = document.getElementById('file-msg-sub');
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('file-input');
+        const fileMsg = document.getElementById('file-msg');
+        const fileMsgSub = document.getElementById('file-msg-sub');
 
-    const filesMap = new Map();
+        const projectRadio = document.querySelector('input[name="source_type"][value="project"]');
+        const uploadRadio = document.querySelector('input[name="source_type"][value="upload"]');
 
-    dropArea.addEventListener('click', () => fileInput.click());
+        const projectCard = document.getElementById('project-card');
+        const uploadCard = document.getElementById('upload-card');
 
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropArea.addEventListener(eventName, preventDefaults, false);
-    });
+        const projectSection = document.getElementById('project-folder-section');
+        const uploadSection = document.getElementById('upload-section');
 
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
+        const filesMap = new Map();
 
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropArea.addEventListener(eventName, () => dropArea.classList.add('dragover'), false);
-    });
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropArea.addEventListener(eventName, () => dropArea.classList.remove('dragover'), false);
-    });
-
-    function addFilesToList(newFiles) {
-        for (let i = 0; i < newFiles.length; i++) {
-            const file = newFiles[i];
-            filesMap.set(file.name, file);
+        function toggleSourceSections() {
+            if (projectRadio.checked) {
+                projectSection.style.display = "block";
+                uploadSection.style.display = "none";
+                projectCard.classList.add("active");
+                uploadCard.classList.remove("active");
+            } else {
+                projectSection.style.display = "none";
+                uploadSection.style.display = "block";
+                projectCard.classList.remove("active");
+                uploadCard.classList.add("active");
+            }
         }
 
-        const dt = new DataTransfer();
-        filesMap.forEach((file) => {
-            dt.items.add(file);
+        projectRadio.addEventListener("change", toggleSourceSections);
+        uploadRadio.addEventListener("change", toggleSourceSections);
+
+        dropArea.addEventListener('click', () => fileInput.click());
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
         });
 
-        fileInput.files = dt.files;
-        updateFileName();
-    }
-
-    dropArea.addEventListener('drop', (e) => {
-        addFilesToList(e.dataTransfer.files);
-    });
-
-    fileInput.addEventListener('change', (e) => {
-        const selectedFiles = e.target.files;
-        if (selectedFiles.length > 0) {
-            addFilesToList(selectedFiles);
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
         }
-    });
 
-    function updateFileName() {
-        const totalFiles = fileInput.files.length;
-        if (totalFiles > 0) {
-            fileMsg.textContent = "נצברו " + totalFiles + " תמונות";
-            fileMsg.style.color = "var(--accent-color)";
-            fileMsgSub.textContent = "אפשר להמשיך להוסיף, תמונות זהות הוחלפו אוטומטית";
-        } else {
-            fileMsg.textContent = "לחץ כאן או גרור תמונות לכאן";
-            fileMsg.style.color = "#cbd5e1";
-            fileMsgSub.textContent = "אפשר לבחור כמה תמונות יחד";
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => dropArea.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => dropArea.classList.remove('dragover'), false);
+        });
+
+        function addFilesToList(newFiles) {
+            for (let i = 0; i < newFiles.length; i++) {
+                const file = newFiles[i];
+                filesMap.set(file.name, file);
+            }
+
+            const dt = new DataTransfer();
+            filesMap.forEach((file) => {
+                dt.items.add(file);
+            });
+
+            fileInput.files = dt.files;
+            updateFileName();
         }
-    }
+
+        dropArea.addEventListener('drop', (e) => {
+            addFilesToList(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const selectedFiles = e.target.files;
+            if (selectedFiles.length > 0) {
+                addFilesToList(selectedFiles);
+            }
+        });
+
+        function updateFileName() {
+            const totalFiles = fileInput.files.length;
+
+            if (totalFiles > 0) {
+                fileMsg.textContent = "נצברו " + totalFiles + " תמונות";
+                fileMsg.style.color = "var(--success)";
+                fileMsgSub.textContent = "אפשר להמשיך להוסיף תמונות, קבצים זהים יוחלפו אוטומטית";
+            } else {
+                fileMsg.textContent = "לחץ כאן או גרור תמונות לכאן";
+                fileMsg.style.color = "white";
+                fileMsgSub.textContent = "אפשר לבחור ולהוסיף כמה תמונות יחד";
+            }
+        }
+
+        toggleSourceSections();
     </script>
 </body>
 </html>

@@ -1,7 +1,31 @@
 import os
-import sys
 import webbrowser
 import threading
+import subprocess
+import sys
+import importlib
+
+
+def ensure_packages():
+    required_packages = {
+        "flask": "flask",
+        "PIL": "Pillow",
+        "piexif": "piexif",
+        "folium": "folium",
+        "matplotlib": "matplotlib",
+        "pytest": "pytest",
+    }
+
+    for module, package in required_packages.items():
+        try:
+            importlib.import_module(module)
+        except ImportError:
+            print(f"[INFO] Installing missing package: {package}")
+            subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
+
+ensure_packages()
+
 
 # ajoute src au path Python
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -9,6 +33,7 @@ SRC_DIR = os.path.join(BASE_DIR, "src")
 
 if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
+
 
 from app import app
 
