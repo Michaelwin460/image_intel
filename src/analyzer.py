@@ -1,7 +1,7 @@
 import math
+from json import JSONDecodeError
+
 import requests
-from extractor import extract_all
-import time
 from geopy.geocoders import Nominatim
 from geopy.extra.rate_limiter import RateLimiter
 
@@ -17,6 +17,8 @@ def unique_cameras(images_data):
 
 def date_range(image_data):
     dates = [image["datetime"] for image in image_data if image["datetime"]]
+    if not dates:
+        return ""
     start = "-".join(sorted(dates)[0].split(" ")[0].split(":"))
     end = "-".join(sorted(dates)[-1].split(" ")[0].split(":"))
     return {"start": start, "end": end}
@@ -72,11 +74,14 @@ def detect_geographical_concentration(images_data):
                 }
 
                 response = requests.get(url, params=params, headers=headers)
-                data = response.json()
+                try:
+                    data = response.json()
 
-                concentrations[data["address"].get("city")] = concentrations.get(data["address"].get("city"), set())
-                concentrations[data["address"].get("city")].add(images_data[i]["filename"])
-                concentrations[data["address"].get("city")].add(images_data[j+i]["filename"])
+                    concentrations[data["address"].get("city")] = concentrations.get(data["address"].get("city"), set())
+                    concentrations[data["address"].get("city")].add(images_data[i]["filename"])
+                    concentrations[data["address"].get("city")].add(images_data[j+i]["filename"])
+                except JSONDecodeError:
+                    print(response.status_code)
     return concentrations
 
 def time_gaps(images_data):
@@ -84,11 +89,11 @@ def time_gaps(images_data):
     sorted_images = sorted(filtered_images, key=lambda image: image["datetime"])
     gaps = []
     for i in range(1, len(sorted_images)):
-        if images_data[i] is images_data[i-1]:
+        if sorted_images[i] is sorted_images[i-1]:
             continue
 
-        perv_image = images_data[i-1]
-        curr_image = images_data[i]
+        perv_image = sorted_images[i-1]
+        curr_image = sorted_images[i]
 
         date1 = perv_image["datetime"].split(" ")[0]
         date2 = curr_image["datetime"].split(" ")[0]
@@ -231,16 +236,6 @@ def analyze(images_data: list[dict]) -> dict:
         "unique_cameras": unique_cameras(images_data),
         "date_range": date_range(images_data),
         "insights": [
-            f"נמצאו {len(unique_cameras(images_data))} מכשירים שונים"
+            f"נמצאו {len(unique_cameras(images_data))} מכשירים שונים" if len(unique_cameras(images_data)) > 1 else  "נמצא מחזיר 1" if len(unique_cameras(images_data)) == 1 else "לא נמצאו מכשירים"
         ] + camera_switches_insights + geographical_concentration_insights + time_gaps_insights + return_to_location_insights
     }
-
-
-path = "C:\\Users\\user\\PyCharmMiscProject\\image_intel_project\\images\\sample_data"
-print(f"analysing {path}...")
-for key, value in analyze(extract_all(path)).items():
-    if key == "insights":
-        print(key + ":")
-        for insight in value:
-            print(insight)
-    print(f"{key}: {value}")

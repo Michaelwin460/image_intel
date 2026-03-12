@@ -16,10 +16,10 @@ from extractor import *
 import folium
 
 
-COLORS = ['pink', 'lightred', 'white', 'lightgray', 'blue', 'lightgreen', 'purple', 'darkgreen', 'red', 'darkblue', 'darkred', 'black', 'cadetblue', 'orange', 'darkpurple', 'beige', 'green', 'lightblue', 'gray']
+COLORS = ['pink', 'lightred', 'lightgray', 'blue', 'lightgreen', 'purple', 'darkgreen', 'red', 'darkblue', 'darkred', 'black', 'cadetblue', 'orange', 'darkpurple', 'beige', 'green', 'lightblue', 'gray']
 
 def sort_by_time(arr):
-    pass
+    return sorted(arr, key=lambda img: img["datetime"])
 
 
 def create_map(images_data):
@@ -33,6 +33,7 @@ def create_map(images_data):
         string של HTML (המפה)
     """
     gps_images = [img for img in images_data if img["has_gps"]]
+    gps_images = sort_by_time(gps_images)
 
     if not gps_images:
         return "<h2>No GPS data found</h2>"
@@ -40,7 +41,7 @@ def create_map(images_data):
     center_lat = sum(img["latitude"] for img in gps_images) / len(gps_images)
     center_lon = sum(img["longitude"] for img in gps_images) / len(gps_images)
 
-    m = folium.Map(location=[center_lat, center_lon], zoom_start=8)
+    m = folium.Map(location=[center_lat, center_lon], zoom_start=7)
 
     color_index = 0
     camera_colors = {}
@@ -52,8 +53,16 @@ def create_map(images_data):
         folium.Marker(
             location=[img["latitude"], img["longitude"]],
             popup=f"{img['filename']}<br>{img['datetime']}<br>{img['camera_model']}",
-            icon=folium.Icon(color=camera_colors[img["camera_model"]])
+            icon=folium.Icon(color=camera_colors[img["camera_model"]],icon="camera")
         ).add_to(m)
+
+    points = [(img["latitude"], img["longitude"]) for img in gps_images]
+
+    folium.PolyLine(
+        locations=points,
+        color="blue",
+        weight=3
+    ).add_to(m)
 
     return m._repr_html_()
 
@@ -69,7 +78,7 @@ if __name__ == "__main__":
          "has_gps": True, "camera_make": "Apple", "camera_model": "iPhone 15 Pro",
          "datetime": "2025-01-13 09:00:00"},
     ]
-    html = create_map(extract_all("C:\\Users\\micha\\OneDrive\\Desktop\\Python Excersize\\image_intel_project\\image_intel_project\\images\\ready"))
+    html = create_map(extract_all("C:\\Users\\user\\PyCharmMiscProject\\image_intel_project\\images\\ready"))
     with open("test_map.html", "w", encoding="utf-8") as f:
         f.write(html)
     print("Map saved to test_map.html")
