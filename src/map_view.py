@@ -116,7 +116,6 @@ def create_map(images_data):
             tooltip="מסלול כרונולוגי"
         ).add_to(m)
 
-    map_name = m.get_name()
     for cluster_key, count in cluster_counts.items():
         if count >= 3:
             cluster_points = [
@@ -171,7 +170,6 @@ def create_map(images_data):
     """
 
     m.get_root().html.add_child(Element(focus_script))
-
     return m.get_root().render()
 
 
