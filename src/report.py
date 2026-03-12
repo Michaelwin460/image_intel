@@ -527,6 +527,46 @@ def create_report(images_data, map_html, timeline_html, analysis):
         .insights-toggle-btn:hover {{
             opacity: 0.92;
         }}
+        .tab-nav {{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 22px;
+    justify-content: center;
+}}
+
+.tab-btn {{
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--blue);
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-size: 0.92rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.22s ease;
+    box-shadow: 0 2px 8px rgba(13, 27, 42, 0.06);
+}}
+
+.tab-btn:hover {{
+    background: var(--light);
+    border-color: var(--accent);
+}}
+
+.tab-btn.active {{
+    background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 6px 16px rgba(27, 79, 114, 0.18);
+}}
+
+.report-tab-section {{
+    display: none;
+}}
+
+.report-tab-section.active {{
+    display: block;
+}}
 </style>
 </head>
 <body>
@@ -540,9 +580,17 @@ def create_report(images_data, map_html, timeline_html, analysis):
 </div>
 
 <div class="container">
+    <div class="tab-nav">
+        <button type="button" class="tab-btn active" data-tab="overview-section" onclick="showTab('overview-section', this)">סיכום</button>
+        <button type="button" class="tab-btn" data-tab="insights-section" onclick="showTab('insights-section', this)">תובנות</button>
+        <button type="button" class="tab-btn" data-tab="map-section" onclick="showTab('map-section', this)">מפה</button>
+        <button type="button" class="tab-btn" data-tab="timeline-section" onclick="showTab('timeline-section', this)">ציר זמן</button>
+        <button type="button" class="tab-btn" data-tab="cameras-section" onclick="showTab('cameras-section', this)">מכשירים</button>
+        <button type="button" class="tab-btn" data-tab="images-section" onclick="showTab('images-section', this)">תמונות</button>
+    </div>
 
-    <div class="section">
-        <div class="section-title">סיכום</div>
+    <div class="section report-tab-section active" id="overview-section">
+    <div class="section-title">סיכום</div>
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-number">{total}</div>
@@ -564,32 +612,34 @@ def create_report(images_data, map_html, timeline_html, analysis):
         {date_range_str}
     </div>
 
-    <div class="section">
-        <div class="section-title">תובנות מרכזיות</div>
+    <div class="section report-tab-section" id="insights-section">
+    <div class="section-title">תובנות מרכזיות</div>
+    {insights_section}
+</div>
         {insights_section}
     </div>
 
-    <div class="section" id="map-section">
+    <div class="section report-tab-section" id="map-section">
     <div class="section-title">מפה אינטראקטיבית</div>
         <div class="map-wrapper">
             <iframe class="map-frame" srcdoc='{safe_map_html}'></iframe>
         </div>
     </div>
 
-    <div class="section">
-        <div class="section-title">ציר זמן</div>
+    <div class="section report-tab-section" id="timeline-section">
+    <div class="section-title">ציר זמן</div>
         <div class="timeline-wrapper">
             {timeline_section}
         </div>
     </div>
 
-    <div class="section">
-        <div class="section-title">מכשירים שזוהו</div>
+    <div class="section report-tab-section" id="cameras-section">
+    <div class="section-title">מכשירים שזוהו</div>
         {cameras_section}
     </div>
 
-    <div class="section">
-        <div class="section-title">כל התמונות — פירוט מלא</div>
+    <div class="section report-tab-section" id="images-section">
+    <div class="section-title">כל התמונות — פירוט מלא</div>
         {images_table}
     </div>
 
@@ -605,6 +655,8 @@ document.addEventListener("click", function (event) {{
 
     const lat = parseFloat(link.dataset.lat);
     const lon = parseFloat(link.dataset.lon);
+
+   showTab("map-section");
 
     const mapSection = document.getElementById("map-section");
     if (mapSection) {{
@@ -636,6 +688,29 @@ function toggleInsights(button) {{
     }});
 
     button.textContent = isHidden ? "View less" : "View more";
+}}
+</script>
+<script>
+function showTab(sectionId, buttonEl = null) {{
+    const sections = document.querySelectorAll(".report-tab-section");
+    const buttons = document.querySelectorAll(".tab-btn");
+
+    sections.forEach(section => section.classList.remove("active"));
+    buttons.forEach(btn => btn.classList.remove("active"));
+
+    const target = document.getElementById(sectionId);
+    if (target) {{
+        target.classList.add("active");
+    }}
+
+    if (buttonEl) {{
+        buttonEl.classList.add("active");
+    }} else {{
+        const matchingBtn = document.querySelector(`.tab-btn[data-tab="${{sectionId}}"]`);
+        if (matchingBtn) {{
+            matchingBtn.classList.add("active");
+        }}
+    }}
 }}
 </script>
 </body>
