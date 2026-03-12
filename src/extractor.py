@@ -1,7 +1,18 @@
+from datetime import datetime
+
 from PIL import Image
-from PIL.ExifTags import TAGS
 from pathlib import Path
-import os
+from PIL.ExifTags import TAGS
+
+FORMATS = [
+        "%Y:%m:%d %H:%M:%S",  # EXIF סטנדרטי
+        "%Y-%m-%d %H:%M:%S",  # מקפים
+        "%Y/%m/%d %H:%M:%S",  # לוכסנים
+        "%Y:%m:%d %H:%M:%S%z",  # עם timezone
+        "%Y-%m-%d %H:%M:%S%z",  # מקפים עם timezone
+    ]
+
+SUPPORTED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.tiff', '.tif', '.heic'}
 
 """
 extractor.py - שליפת EXIF מתמונות
@@ -10,29 +21,122 @@ extractor.py - שליפת EXIF מתמונות
 ראו docs/api_contract.md לפורמט המדויק של הפלט.
 
 """
+def dms_to_decimal(dms_tuple, ref):
+    """
+    פונקצית לחישוב שטח של המיקום של ה GPS
+    Args:
+        dms_tuple: טפל של (מעלות, דקות, שניות) משמאל לימין
+        ref: איזה אזור במפה: (N, E, S, W)
+
+    Returns: מספר עשרוני של מיקום המדויק של ה GPS למפה
+    """
+    degrees = dms_tuple[0]
+    minutes = dms_tuple[1]
+    seconds = dms_tuple[2]
+    decimal = float(degrees) + (float(minutes) / 60) + (float(seconds) / 3600)
+    # טיפול בדרום ומערב שצריך את הערך השלילי
+    if ref in [b'S', b'W', 'S', 'W']:
+        decimal = -decimal
+    return decimal
 
 
 def has_gps(data: dict):
-    pass
+    """
+    בודק אם קיים GPS לקובץ
+    Args:
+        data: מילון של פרטים על התמונה
+
+    Returns: True אם יש GPS, אחרת False
+    """
+    # מילון למפתחות של הקווים למיקום של המפה
+    required_keys = {1, 2, 3, 4}
+    return required_keys.issubset(data["GPSInfo"].keys()) if "GPSInfo" in data else False
 
 
 def latitude(data: dict):
-    pass
+    """
+    מחלץ את קו הרוחב של המיקום של התמונה
+    Args:
+        data: מילון של פרטים על התמונה
+
+    Returns: מספר עשרוני של latitude, או None
+    """
+    if has_gps(data):
+        try:
+            lat =  dms_to_decimal(data["GPSInfo"][2], data["GPSInfo"][1])
+            return lat
+        except (KeyError, TypeError, ValueError, IndexError):
+            return None
+    else:
+        return None
 
 
 def longitude(data: dict):
-    pass
+    """
+    מחלץ את קו האורך של המיקום של התמונה
+    Args:
+        data: מילון של פרטים על התמונה
 
-def datatime(data: dict):
-    pass
+    Returns: מספר עשרוני של longitude, או None
+    """
+    if has_gps(data):
+        try:
+            lon = dms_to_decimal(data["GPSInfo"][4], data["GPSInfo"][3])
+            return lon
+        except (KeyError, TypeError, ValueError, IndexError):
+            return None
+    else:
+        return None
+
+
+def extract_datetime(data: dict):
+    """
+    מחלץ את התאריך והזמן שצולם התמונה
+    Args:
+        data: מילון של פרטים על התמונה
+
+    Returns: מחרוזת תאריך data["DateTimeOriginal"], או None אם יש תאריך לא תקין או אין תאריך
+    """
+    raw = data.get("DateTimeOriginal") or data.get("DateTime")
+    if not raw:
+        return None
+
+    for fmt in FORMATS:
+        try:
+            dt = datetime.strptime(raw.strip(), fmt)
+            return dt.strftime("%Y-%m-%d %H:%M:%S")  # תמיד מחזיר פורמט אחיד
+        except ValueError:
+            continue
+    return None
+
 
 
 def camera_make(data: dict):
-    pass
+    """
+    מחלץ את היצרן של המכשיר שבו צולם התמונה
+    Args:
+        data: מילון של פרטים על התמונה
+
+    Returns: מחרוזת יצרן data["Make"], או None
+    """
+    try:
+        return data["Make"].split("\x00")[0]
+    except (KeyError, AttributeError):
+        return None
 
 
 def camera_model(data: dict):
-    pass
+    """
+    מחלץ את סוג המכשיר שבו צולם התמונה
+    Args:
+        data: מילון של פרטים על התמונה
+
+    Returns: מחרוזת סוג המכשיר data["Model"], או None
+    """
+    try:
+        return data["Model"].split("\x00")[0]
+    except (KeyError, AttributeError):
+        return None
 
 
 def extract_metadata(image_path):
@@ -50,9 +154,9 @@ def extract_metadata(image_path):
 
     # תיקון: טיפול בתמונה בלי EXIF - בלי זה, exif.items() נופל עם AttributeError
     try:
-        img = Image.open(image_path)
-        exif = img._getexif()
-    except Exception:
+        with Image.open(image_path) as img:
+            exif = img._getexif()
+    except (OSError, IOError, AttributeError):
         exif = None
 
     if exif is None:
@@ -70,12 +174,11 @@ def extract_metadata(image_path):
     for tag_id, value in exif.items():
         tag = TAGS.get(tag_id, tag_id)
         data[tag] = value
-
     # תיקון: הוסר print(data) שהיה כאן - הדפיס את כל ה-EXIF הגולמי על כל תמונה
 
     exif_dict = {
         "filename": path.name,
-        "datetime": datatime(data),
+        "datetime": extract_datetime(data),
         "latitude": latitude(data),
         "longitude": longitude(data),
         "camera_make": camera_make(data),
@@ -93,6 +196,16 @@ def extract_all(folder_path):
         folder_path: נתיב לתיקייה
 
     Returns:
-        list של dicts (כמו extract_metadata)
+        list של dicts (כמו extract_metadata), או רשימה ריקה
     """
-    pass
+    path = Path(folder_path)
+    imgs = []
+    try:
+        # עוברים על כל הקבצים שיש בתיקייה
+        for file in path.rglob('*'):
+            # בדיקות האם זה קובץ שמסתיים באחד מ- {'.jpg', '.jpeg', '.png', '.tiff', '.tif', '.heic'}
+            if file.is_file() and file.suffix.lower() in SUPPORTED_EXTENSIONS:
+                imgs.append(extract_metadata(file))
+        return imgs
+    except OSError:
+        return []
