@@ -112,6 +112,7 @@ def fake_generate_pdf():
     buffer.seek(0)
     return buffer.read()
 
+
 @app.route('/download')
 def download_pdf():
     pdf_data = fake_generate_pdf()
